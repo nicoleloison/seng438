@@ -445,4 +445,259 @@ public class RangeTest {
          
     }
     //////////End of getLowerBound() method testing//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // ************ NEW TESTS ********************
+    //////////Testing getUpperBound() method using ECT/////////////////////////////////////////////////////////////////////////////////////////////////
+    
+@Test
+public void getUpperBoundTestLrg() { // upper bound having a very large number  
+   
+  double upperBound = 1000000000;
+  range = new Range( -10, upperBound); 
+   
+  Assert.assertNotNull(range); // confirm the object reference is not null
+   
+  double retValue = range.getUpperBound();
+   
+  Assert.assertEquals("Expecting it to return 1000000000",upperBound, retValue, 0.001);
 }
+
+@Test
+public void getUpperBoundTestAtZero() { // upper bound being at 0   
+   
+  double upperBound = 0;
+  range = new Range( -10, upperBound);  
+   
+  Assert.assertNotNull(range); // confirm the object reference is not null
+   
+  double retValue = range.getUpperBound();
+   
+  Assert.assertEquals("Expecting it to return 0",upperBound, retValue, 0.001);
+}
+
+@Test
+public void getUpperBoundTestAtZeroZero() { // lower bound being at 0 and higher bound at 0     
+   
+  double lowerBound = 0;
+  double higherBound = 0;
+  range = new Range(lowerBound,higherBound);  
+   
+  Assert.assertNotNull(range); // confirm the object reference is not null
+   
+  double retValue = range.getLowerBound();
+   
+  Assert.assertEquals("Expecting it to return 0",lowerBound, retValue, 0.001);
+}
+
+@Test
+public void getUpperBoundTestNegLrgNum() { // upper bound being a very large negative number   
+   
+  double lowerBound = -1000000002;
+  double higherBound = -1000000001;
+  range = new Range(lowerBound,higherBound);  
+   
+  Assert.assertNotNull(range); // confirm the object reference is not null
+   
+  double retValue = range.getUpperBound();
+   
+  Assert.assertEquals("Expecting it to return 1000000000",higherBound, retValue, 0.001);
+}
+
+//////////End of getUpperBound() method testing//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+@Test
+public void toStringTest() { // Testing to string
+	String expected = "Range[-5.0,5.0]";
+	String actual = range.toString();
+	Assert.assertEquals("Expected to get Range[-5.0,5.0]", expected, actual);
+}
+
+@Test
+public void getCentralValueTestNOM() {
+	double expected = 0;
+	double actual = range.getCentralValue();
+	Assert.assertEquals("Expected to get 0", expected, actual, 0.01d);
+}
+
+// Testing the constructor for illegal values
+@Test
+public void illegalRangeTest() {
+	String errorMsg = "Range(double, double): require lower (5.0) <= upper (-5.0).";
+	try {
+		Range range = new Range(5, -5);
+	}catch(Exception e) {
+		Assert.assertEquals(errorMsg, e.getMessage());
+	}
+	
+}
+
+///// Testing Equals/////////////
+
+@Test
+public void notEqualsTest() {
+	String s = ""; // make a dummy obj
+	boolean actual = range.equals(s);
+	Assert.assertTrue("not false", !(actual));
+}
+@Test
+public void notEqualsLBTest() {
+	Range r = new Range(-6, 5);
+	boolean actual = range.equals(r);
+	Assert.assertTrue("not false", !(actual));
+}
+@Test
+public void equalsUBTest() {
+	Range r = new Range(-5, 5);
+	boolean actual = range.equals(r);
+	Assert.assertTrue(actual);
+}
+
+@Test
+public void equalsUBNotEqualsLBTest() {
+	Range r = new Range(-6, 5);
+	boolean actual = range.equals(r);
+	Assert.assertTrue("not false", !(actual));
+}
+@Test
+public void equalsLBNotEqualsUBTest() {
+	Range r = new Range(-5, 6);
+	boolean actual = range.equals(r);
+	Assert.assertTrue(actual);
+}
+/////////////////////////////////////////////////////////
+
+// Expand tests/////////////
+@Test
+public void expandNullTest() {
+	Range r = null;
+	String error = "Null 'range' argument.";
+	try {
+		range.expand(r, 0, 0);
+	}catch(Exception e) {
+		Assert.assertEquals(error, e.getMessage());
+	}
+}
+@Test
+public void expandNormalTest() {
+	Range expected = new Range(45, 55);
+	Range actual = range.expand(range, -5, 5);
+	
+	Assert.assertEquals(expected, actual);
+}
+
+/////////////////////////////////////////////////////////
+
+// Combine tests /////////////
+
+@Test
+public void combineNullXTest() { // Testing scenario where the first argument is null
+	Range rangeX = null;
+	Range rangeY = new Range(-10, 1);
+	Range expected = rangeY;
+	Range actual = Range.combine(rangeX, rangeY);
+	
+	Assert.assertEquals("Expected rangeY", expected, actual);
+}
+
+@Test
+public void combineNullYTest() { // Testing scenario where the second argument is null
+	Range rangeX = new Range(-10, 1);
+	Range rangeY = null;
+	Range expected = rangeY;
+	Range actual = Range.combine(rangeX, rangeY);
+	
+	Assert.assertEquals("Expected rangeX", expected, actual);
+}
+
+@Test
+public void combineTest() { // Testing scenario where both arguments are not null
+	Range rangeX = new Range(-10, 1);
+	Range rangeY = new Range(0, 10);
+	Range expected  = new Range(-10, 10);
+	Range actual = Range.combine(rangeX, rangeY);
+	
+	Assert.assertEquals("Expected Range(-10, 10)", expected, actual);
+}
+
+
+////////////////////////////////////////////////////////
+
+// expandToInclude tests /////////////
+
+@Test
+public void expandToIncludeNullObjTest() { // Testing scenario where object is null
+	Range r = null;
+	double value = 10;
+	Range expected = new Range(10, 10);
+	Range actual = Range.expandToInclude(r, value);
+	
+	Assert.assertEquals("Expected Range (10, 10)", expected, actual);
+}
+
+@Test
+public void expandToIncludeBLBTest() { // Testing scenario where value sets new lower bound
+	Range r = new Range(0, 10);
+	double value = -10;
+	Range expected = new Range(-10, 10);
+	Range actual = Range.expandToInclude(r, value);
+	
+	Assert.assertEquals("Expected Range (-10, 10)", expected, actual);
+}
+
+@Test
+public void expandToIncludeAUBTest() { // Testing scenario where value sets new upper bound
+	Range r = new Range(0, 5);
+	double value = 10;
+	Range expected = new Range(0, 10);
+	Range actual = Range.expandToInclude(r, value);
+	
+	Assert.assertEquals("Expected Range (0, 10)", expected, actual);
+}
+
+@Test
+public void expandToIncludeSubsetTest() { // Testing scenario where value is within the range of object
+	Range r = new Range(0, 10);
+	double value = 5;
+	Range expected = new Range(0, 10);
+	Range actual = Range.expandToInclude(r, value);
+	
+	Assert.assertEquals("Expected Range (0, 10)", expected, actual);
+}
+
+//////////////////////////////////////////////////////////
+
+// shift tests /////////////
+
+@Test
+public void shiftZeroCrossingTest() { // Testing scenario where a range can cross 0
+	Range base = new Range(-5, -1);
+	double delta = 10;
+	boolean allowZeroCrossing = true;
+	Range expected = new Range(5, 11);
+	Range actual = Range.shift(base, delta, allowZeroCrossing);
+	
+	Assert.assertEquals("Expected Range(5, 11)", expected, actual);
+}
+
+@Test
+public void shiftNoZeroCrossingTest() { // Testing a scenario where a range can not cross 0
+	Range base = new Range(-5, -1);
+	double delta = 10;
+	Range expected = new Range(0, 0);
+	Range actual = Range.shift(base, delta);
+	
+	Assert.assertEquals("Expected Range(0, 0)", expected, actual);
+}
+
+@Test
+public void shiftNegativeTest() { // Testing a scenario where the shift delta is negative
+	Range base = new Range(0, 5);
+	double delta = 10;
+	Range expected = new Range(10, 15);
+	Range actual = Range.shift(base, delta);
+	
+	Assert.assertEquals("Expected Range(10, 15)", expected, actual);
+}
+
+}
+ 
